@@ -91,3 +91,21 @@ input {
 .summary-box {
   animation: fadeUp 0.45s ease both;
 }
+
+:root {
+  --primary: #5B21B6;
+  --primary-hover: #6D28D9;
+  --accent: #8B5CF6;
+  --accent-light: #EDE9FE;
+  --background: #F7F5FF;
+  --surface: #FFFFFF;
+  --surface-secondary: #FAF8FF;
+  --text-primary: #24143F;
+  --text-secondary: #6B6280;
+  --text-muted: #938BA6;
+  --border: #E9E2F5;
+  --success: #15803D;
+  --rating: #F59E0B;
+  --shadow-soft: 0 4px 20px rgba(91, 33, 182, 0.06);
+  --shadow-hover: 0 12px 32px rgba(91, 33, 182, 0.12);
+}

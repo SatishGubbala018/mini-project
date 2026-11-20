@@ -468,6 +468,134 @@
   cursor: pointer;
 }
 
+.checkout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(45, 27, 70, .38);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.modal-content {
+  width: min(620px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 24px;
+  background: #fff;
+  padding: 22px;
+  box-shadow: 0 24px 70px rgba(54, 28, 91, .25);
+}
+
+.modal-content h2 {
+  margin: 0 0 16px;
+  color: #39204f;
+}
+
+.close {
+  float: right;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #6b4e80;
+}
+
+.address-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-group {
+  display: grid;
+  gap: 5px;
+}
+
+.form-group:first-child,
+.form-group:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: .82rem;
+  color: #735f82;
+}
+
+.form-group input {
+  border: 1px solid #ddd2e9;
+  border-radius: 12px;
+  padding: 11px;
+}
+
+.payment-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.payment-options h3 {
+  margin: 0;
+  color: #432b55;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e2d6ed;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.payment-option span {
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-option small {
+  color: #81728d;
+}
+
+.payment-option.selected {
+  background: #f4efff;
+  border-color: #a87be0;
+}
+
+.payment-option.disabled {
+  opacity: .55;
+}
+
+.checkout-message {
+  color: #b42318;
+  margin-top: 10px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.cancel-btn,
+.place-order-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #eee8f3;
+  color: #573c68;
+}
+
+.place-order-btn {
+  background: linear-gradient(135deg, #7d38d8, #5a2ed1);
+  color: #fff;
+}
+
 @media (max-width: 900px) {
   .cart-topbar {
     grid-template-columns: 1fr;

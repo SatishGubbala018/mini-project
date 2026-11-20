@@ -6,6 +6,7 @@ import ProductDetailPage from './Pages/Product/ProductDetailPage'
 import LoginPage from './Pages/Login/LoginPage'
 import CartPage from './Pages/Cart/CartPage'
 import CategoryPage from './Pages/Category/CategoryPage'
+import ProfilePage from './Pages/Profile/ProfilePage'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
@@ -48,6 +49,10 @@ function App() {
                   <CartPage />
                 </ProtectedRoute>
               }
+            />
+            <Route
+              path="/profile"
+              element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
             />
           </Routes>
         </CartProvider>

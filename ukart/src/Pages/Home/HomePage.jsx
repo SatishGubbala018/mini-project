@@ -1,25 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './HomePage.css'
-import backgroundImage from '../../assets/loginPage/background.png'
-import allIcon from '../../assets/home/All.png'
-import fashionIcon from '../../assets/home/fashion.png'
-import electronicsIcon from '../../assets/home/electronics.png'
-import mobilesIcon from '../../assets/home/mobiles.png'
-import audioIcon from '../../assets/home/audo.png'
-import footwearIcon from '../../assets/home/footware.png'
-import homeIcon from '../../assets/home/homeliving.png'
+import { LayoutGrid, Shirt, Laptop, Smartphone, Headphones, Footprints, Sofa } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 
+
 const categories = [
-  { name: 'All', icon: allIcon },
-  { name: 'Fashion', icon: fashionIcon },
-  { name: 'Electronics', icon: electronicsIcon },
-  { name: 'Mobiles', icon: mobilesIcon },
-  { name: 'Audio', icon: audioIcon },
-  { name: 'Footwear', icon: footwearIcon },
-  { name: 'Home', icon: homeIcon },
+  { name: 'All', Icon: LayoutGrid },
+  { name: 'Fashion', Icon: Shirt },
+  { name: 'Electronics', Icon: Laptop },
+  { name: 'Mobiles', Icon: Smartphone },
+  { name: 'Audio', Icon: Headphones },
+  { name: 'Footwear', Icon: Footprints },
+  { name: 'Home', Icon: Sofa },
 ]
 
 const allCategoryGroups = ['Fashion', 'Mobiles', 'Electronics', 'Audio', 'Footwear', 'Home']
@@ -104,6 +98,8 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [searchTerm, setSearchTerm] = useState('')
+  const heroRef = useRef(null)
+  const carouselRefs = useRef({})
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -134,37 +130,21 @@ const HomePage = () => {
     navigate(`/category/All?q=${encodeURIComponent(trimmed)}`)
   }
 
-  const visibleProducts = useMemo(() => {
-    if (!products.length) return []
+  const categoryGroups = allCategoryGroups
+    .map((category) => ({
+      name: category,
+      items: products.filter((product) => getDisplayCategory(product.category) === category).slice(0, 20),
+    }))
+    .filter((group) => group.items.length > 0)
 
-    if (selectedCategory === 'All') {
-      return products.filter((product) => !hiddenHomeGroups.has(getDisplayCategory(product.category))).slice(0, 5)
-    }
-
-    if (hiddenHomeGroups.has(selectedCategory)) {
-      return []
-    }
-
-    return products.filter((product) => getDisplayCategory(product.category) === selectedCategory).slice(0, 5)
-  }, [products, selectedCategory])
-
-  const categoryGroups = useMemo(() => {
-    const groups = allCategoryGroups
-      .map((category) => ({
-        name: category,
-        items: products.filter((product) => getDisplayCategory(product.category) === category).slice(0, 20),
-      }))
-      .filter((group) => group.items.length > 0)
-
-    if (selectedCategory === 'All') {
-      return groups.filter((group) => !hiddenHomeGroups.has(group.name))
-    }
-
-    return groups.filter((group) => group.name === selectedCategory)
-  }, [products, selectedCategory])
+  const scrollCarousel = (category, direction) => {
+    const element = carouselRefs.current[category]
+    if (!element) return
+    element.scrollBy({ left: direction * Math.min(element.clientWidth * 0.8, 700), behavior: 'smooth' })
+  }
 
   return (
-    <div className="home-page page-enter" style={{ backgroundImage: `url(${backgroundImage})` }}>
+    <div className="home-page page-enter">
       <div className="home-layout">
         <main className="home-main page-enter-card">
           <header className="topbar">
@@ -190,7 +170,7 @@ const HomePage = () => {
                 type="button"
                 className="action-pill profile-pill"
                 aria-label="Profile"
-                onClick={() => navigate(isAuthenticated ? '/' : '/login')}
+                onClick={() => navigate(isAuthenticated ? '/profile' : '/login')}
                 title={isAuthenticated ? user?.name || 'Profile' : 'Login'}
               >
                 {isAuthenticated ? (user?.name ? user.name.charAt(0).toUpperCase() : 'P') : '◔'}
@@ -226,29 +206,34 @@ const HomePage = () => {
 
               <p>Discover amazing deals on fashion, electronics and more!</p>
 
-              <button type="button" className="shop-btn">
+              <button type="button" className="shop-btn" onClick={() => document.querySelector('.category-strip')?.scrollIntoView({ behavior: 'smooth' })}>
                 Shop Now <span>→</span>
               </button>
             </div>
 
             <div className="hero-visual">
               <div className="hero-glow" />
-             
+              
             </div>
           </section>
 
           <nav className="category-strip" aria-label="Categories">
-            {categories.map((category) => (
-              <button
-                type="button"
-                key={category.name}
-                className={`category-pill ${selectedCategory === category.name ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(category.name)}
-              >
-                <img src={category.icon} alt={category.name} className="category-icon" />
-                <span>{category.name}</span>
-              </button>
-            ))}
+            {categories.map((category) => {
+              const Icon = category.Icon
+              return (
+                <button
+                  type="button"
+                  key={category.name}
+                  className={`category-pill ${selectedCategory === category.name ? 'active' : ''}`}
+                  onClick={() => setSelectedCategory(category.name)}
+                >
+                  <span className="category-icon-wrap" aria-hidden="true">
+                    <Icon size={26} strokeWidth={1.9} />
+                  </span>
+                  <span>{category.name}</span>
+                </button>
+              )
+            })}
           </nav>
 
           <section className="offers-row">
@@ -256,7 +241,7 @@ const HomePage = () => {
               <div>
                 <h3>Latest Fashion Trends</h3>
                 <p>Up to 60% Off</p>
-                <button type="button">Shop Fashion →</button>
+                <button type="button" onClick={() => navigate('/category/Fashion')}>Shop Fashion →</button>
               </div>
             </article>
 
@@ -264,7 +249,7 @@ const HomePage = () => {
               <div>
                 <h3>Top Electronics Best Prices</h3>
                 <p>Up to 50% Off</p>
-                <button type="button">Shop Electronics →</button>
+                <button type="button" onClick={() => navigate('/category/Electronics')}>Shop Electronics →</button>
               </div>
             </article>
           </section>
@@ -280,12 +265,30 @@ const HomePage = () => {
                 <div key={group.name} className="category-section">
                   <div className="section-head">
                     <h2>{group.name}</h2>
+                    <div className="carousel-controls">
+                      <button
+                        type="button"
+                        className="scroll-button left"
+                        onClick={() => scrollCarousel(group.name, -1)}
+                        aria-label="Scroll left"
+                      >
+                        ◀
+                      </button>
+                      <button
+                        type="button"
+                        className="scroll-button right"
+                        onClick={() => scrollCarousel(group.name, 1)}
+                        aria-label="Scroll right"
+                      >
+                        ▶
+                      </button>
+                    </div>
                     <button type="button" onClick={() => navigate(`/category/${encodeURIComponent(group.name)}`)}>
                       View All →
                     </button>
                   </div>
 
-                  <div className="product-grid">
+                  <div className="product-grid" ref={(el) => (carouselRefs.current[group.name] = el)}>
                     {group.items.length ? (
                       group.items.map((product) => {
                         const priceInRupees = Math.round(product.price * 90)
@@ -310,7 +313,7 @@ const HomePage = () => {
                             </button>
 
                             <div className="product-image-wrap">
-                              <img src={product.thumbnail} alt={product.title} />
+                              <img src={product.thumbnail} alt={product.title} loading="lazy" />
                             </div>
 
                             <h3>{product.title}</h3>
@@ -326,6 +329,9 @@ const HomePage = () => {
                                 <span className="old-price">{formatPrice(originalPrice)}</span>
                               </div>
                             </div>
+                            {Number(product.discountPercentage) > 0 && (
+                              <span className="discount-badge">{Math.round(product.discountPercentage)}% OFF</span>
+                            )}
                           </article>
                         )
                       })

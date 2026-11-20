@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import connectDB from './server/config/db.js'
 import authRoutes from './server/routes/authRoutes.js'
+import shopRoutes from './server/routes/shopRoutes.js'
 
 dotenv.config()
 
@@ -17,6 +18,7 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/shop', shopRoutes)
 
 const startServer = async () => {
   await connectDB()

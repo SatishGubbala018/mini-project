@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import './CategoryPage.css'
+import { useAuth } from '../../context/AuthContext'
 
 const formatPrice = (price) => `₹${Number(price).toLocaleString('en-IN')}`
 
@@ -26,6 +27,7 @@ const CategoryPage = () => {
   const selectedCategory = decodeURIComponent(category || 'All')
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const { user, isAuthenticated } = useAuth()
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -68,7 +70,7 @@ const CategoryPage = () => {
           </div>
 
           <div className="top-actions" aria-label="User actions">
-            <button type="button" className="action-pill" aria-label="Profile">◔</button>
+            <button type="button" className="action-pill" aria-label="Profile" onClick={() => navigate(isAuthenticated ? '/profile' : '/login')}>◔</button>
             <button type="button" className="action-pill" aria-label="Saved items">♡</button>
             <button type="button" className="action-pill" aria-label="Cart" onClick={() => navigate('/cart')}>🛒</button>
           </div>

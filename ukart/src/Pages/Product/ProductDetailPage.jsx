@@ -138,7 +138,7 @@ const ProductDetailPage = () => {
           </label>
 
           <div className="top-actions" aria-label="User actions">
-            <button type="button" className="action-pill" aria-label="Profile">◔</button>
+            <button type="button" className="action-pill" aria-label="Profile" onClick={() => navigate(isAuthenticated ? '/profile' : '/login')}>◔</button>
             <button type="button" className="action-pill" aria-label="Saved items">♡</button>
             <button type="button" className="action-pill" aria-label="Cart" onClick={() => navigate('/cart')}>
               🛒

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
@@ -8,16 +8,57 @@ const formatPrice = (price) => `₹${Number(price).toLocaleString('en-IN')}`
 
 const CartPage = () => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
-  const { items, subtotal, discount, total, updateQuantity, removeItem } = useCart()
+  const { isAuthenticated, token, user } = useAuth()
+  const { items, subtotal, discount, total, updateQuantity, removeItem, clearCart } = useCart()
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [placingOrder, setPlacingOrder] = useState(false)
+  const [checkoutMessage, setCheckoutMessage] = useState('')
+  const [address, setAddress] = useState({ fullName: user?.name || '', phone: user?.phone || '', addressLine: '', city: '', state: '', pincode: '' })
+
+  useEffect(() => {
+    if (!checkoutOpen || !token) return
+    fetch('/api/shop/profile', { headers: { Authorization: `Bearer ${token}` } })
+      .then((response) => response.json())
+      .then((profile) => {
+        if (profile.address) setAddress((current) => ({ ...current, ...profile.address, fullName: profile.address.fullName || profile.name, phone: profile.address.phone || profile.phone }))
+      })
+      .catch(() => {})
+  }, [checkoutOpen, token])
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: '/cart' } })
       return
     }
+    setCheckoutMessage('')
+    setCheckoutOpen(true)
+  }
 
-    alert('Checkout is ready for authenticated users.')
+  const handleAddressChange = (event) => {
+    const { name, value } = event.target
+    setAddress((current) => ({ ...current, [name]: value }))
+  }
+
+  const placeOrder = async (event) => {
+    event.preventDefault()
+    setPlacingOrder(true)
+    setCheckoutMessage('')
+    try {
+      const response = await fetch('/api/shop/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ items, address, paymentMethod: 'COD' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message || 'Unable to place order.')
+      clearCart()
+      setCheckoutOpen(false)
+      navigate('/profile')
+    } catch (error) {
+      setCheckoutMessage(error.message)
+    } finally {
+      setPlacingOrder(false)
+    }
   }
 
   return (
@@ -35,7 +76,7 @@ const CartPage = () => {
           </label>
 
           <div className="top-actions" aria-label="User actions">
-            <button type="button" className="action-pill" aria-label="Profile">◔</button>
+            <button type="button" className="action-pill" aria-label="Profile" onClick={() => navigate(isAuthenticated ? '/profile' : '/login')}>◔</button>
             <button type="button" className="action-pill" aria-label="Saved items">♡</button>
             <button type="button" className="action-pill" aria-label="Cart" onClick={() => navigate('/cart')}>
               🛒
@@ -100,7 +141,7 @@ const CartPage = () => {
             </div>
 
             <div className="cart-summary-row">
-              <button type="button" className="clear-cart-btn" onClick={() => navigate('/')}>
+              <button type="button" className="clear-cart-btn" onClick={clearCart}>
                 🗑 Clear Cart
               </button>
 
@@ -129,10 +170,70 @@ const CartPage = () => {
                 ← Continue Shopping
               </button>
 
-              <button type="button" className="checkout-btn" onClick={handleCheckout}>
-                🛡 Proceed to Checkout →
+              <button type="button" className="checkout-btn" onClick={handleCheckout} disabled={placingOrder}>
+                {placingOrder ? 'Processing...' : '🛡 Proceed to Checkout →'}
               </button>
             </div>
+
+            {checkoutOpen && (
+              <div className="checkout-modal">
+                <div className="modal-content">
+                  <span className="close" onClick={() => setCheckoutOpen(false)}>&times;</span>
+                  <h2>Checkout</h2>
+
+                  <form onSubmit={placeOrder}>
+                    <div className="address-form">
+                      <div className="form-group">
+                        <label htmlFor="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" value={address.fullName} onChange={handleAddressChange} required />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" value={address.phone} onChange={handleAddressChange} required />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="addressLine">Address</label>
+                        <input type="text" id="addressLine" name="addressLine" value={address.addressLine} onChange={handleAddressChange} required />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="city">City</label>
+                        <input type="text" id="city" name="city" value={address.city} onChange={handleAddressChange} required />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="state">State</label>
+                        <input type="text" id="state" name="state" value={address.state} onChange={handleAddressChange} required />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="pincode">Pincode</label>
+                        <input type="text" id="pincode" name="pincode" value={address.pincode} onChange={handleAddressChange} required />
+                      </div>
+                    </div>
+
+                    <div className="payment-options">
+                      <h3>Payment Method</h3>
+                      <label className="payment-option selected"><input type="radio" name="payment" checked readOnly /> <span><strong>Cash on Delivery</strong><small>Pay when your order arrives</small></span></label>
+                      <label className="payment-option disabled"><input type="radio" name="payment" disabled /> <span><strong>Online Payment</strong><small>Coming soon</small></span></label>
+                    </div>
+
+                    {checkoutMessage && <div className="checkout-message">{checkoutMessage}</div>}
+
+                    <div className="modal-actions">
+                      <button type="button" className="cancel-btn" onClick={() => setCheckoutOpen(false)}>
+                        Cancel
+                      </button>
+                      <button type="submit" className="place-order-btn" disabled={placingOrder}>
+                        {placingOrder ? 'Placing Order...' : 'Place Order'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

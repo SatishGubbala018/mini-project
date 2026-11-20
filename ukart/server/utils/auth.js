@@ -21,3 +21,5 @@ export const generateToken = (user) =>
     JWT_SECRET,
     { expiresIn: '7d' }
   )
+
+export const verifyToken = (token) => jwt.verify(token, JWT_SECRET)

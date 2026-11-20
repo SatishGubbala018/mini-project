@@ -62,6 +62,8 @@ export const CartProvider = ({ children }) => {
     setItems((current) => current.filter((item) => item.id !== productId))
   }
 
+  const clearCart = () => setItems([])
+
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.price * 90 * item.quantity, 0),
     [items]
@@ -80,6 +82,7 @@ export const CartProvider = ({ children }) => {
       addToCart,
       updateQuantity,
       removeItem,
+      clearCart,
       cartCount: items.reduce((sum, item) => sum + item.quantity, 0),
       subtotal,
       discount,
